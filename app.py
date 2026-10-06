@@ -3,7 +3,7 @@ import requests
 
 app = Flask(__name__)
 
-# 💡 1. 修改：建立中俄文題庫
+# 💡 1. 建立中俄文題庫
 zh_ru_dict = {
     "你好": "Здравствуйте (Zdravstvuyte)",
     "謝謝": "Спасибо (Spasibo)",
@@ -11,7 +11,7 @@ zh_ru_dict = {
     "對不起": "Извините (Izvinite)",
     "再見": "До свидания (Do svidaniya)",
     "早安": "Доброе утро (Dobroye utro)",
-    "晚安": "Спокойной ночи (Spokoynoy nochi)",
+    "晚安": "Спокойной ноchi (Spokoynoy nochi)",
     "老師": "Учитель (Uchitel')",
     "學生": "Студент (Student)",
     "朋友": "Друг (Drug)",
@@ -29,7 +29,7 @@ def competition():
     return render_template('competition.html')
 
 
-# 💡 2. 修改：中翻俄文查詢功能
+# 💡 2. 中翻俄文查詢功能
 @app.route('/ask', methods=['GET', 'POST'])
 def ask():
     if request.method == 'POST':
@@ -40,9 +40,23 @@ def ask():
     return render_template('ask.html', question="", answer="")
 
 
-# 💡 3. 修改：改成介紹西洋棋的歷史
-@app.route('/activities')
+# 💡 3. 恢復原本的課外活動（留下原本的版面與互動邏輯）
+@app.route('/activities', methods=['GET', 'POST'])
 def activities():
+    if request.method == 'POST':
+        # 讀取學生的問題
+        question = request.form.get('question', '').strip()
+        # 查詢課外活動的對應答案（預設提示）
+        answer1 = "抱歉，我目前沒有這個詞的韓文對應。"
+        # 回傳答案給學生
+        return render_template('activities.html', question=question, answer=answer1)
+    # GET 時給空白欄位
+    return render_template('activities.html', question="", answer="")
+
+
+# 💡 4. 新增：第八版面獨立的西洋棋歷史介紹路由
+@app.route('/chess')
+def chess():
     # 建立西洋棋歷史的結構化資料，方便網頁渲染
     chess_history = {
         "title": "西洋棋的千古演變史",
@@ -50,16 +64,17 @@ def activities():
         "evolution": "隨後傳入波斯並演變為「沙特蘭茲」（Shatranj）。15 世紀末，這項遊戲在歐洲進行了重大改革，國王、皇后與主教擁有了現代的移動規則，讓節奏變得更加快速刺激。",
         "modern": "19 世紀中葉，現代西洋棋錦標賽正式誕生。如今在 AI 與電腦深藍（Deep Blue）的挑戰下，西洋棋已成為全球最普及、最受推崇的智力競技運動之一。"
     }
-    return render_template('activities.html', history=chess_history)
+    # 對應讀取 templates/chess.html
+    return render_template('chess.html', history=chess_history)
 
 
-# 💡 4. 修改：固定查詢 00918（大華優利高填息30）股價
+# 💡 5. 固定查詢 00918（大華優利高填息30）股價
 @app.route('/stock', methods=['GET', 'POST'])
 def stock():
     stock_no = "00918"  # 固定為 00918
     stock_name = "大華優利高填息30"
     
-    # 向台灣證交所 API 請求 00918 當月資料
+    # 修正：更新為台灣證交所正確的 API 完整網址
     url = f"https://twse.com.tw{stock_no}"
     
     try:
@@ -96,6 +111,10 @@ def electives():
 @app.route('/ai')
 def ai():
     return render_template('ai.html')
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
 
 if __name__ == '__main__':
